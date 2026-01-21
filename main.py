@@ -108,16 +108,25 @@ class SkyDashBot(discord.Client):
 client = SkyDashBot()
 
 @client.tree.command(name="weather", description="Search for weather in a specific location")
-@app_commands.describe(location="Type the city or place name (e.g. London, UK)")
+@app_commands.describe(location="City name (e.g. Londonderry NH)")
 async def weather(interaction: discord.Interaction, location: str):
-    await interaction.response.defer() # Shows 'Bot is thinking...'
+    await interaction.response.defer()
 
-    # 1. Geocoding API (Convert city name to Coordinates)
-    geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={location}&count=1"
+    # FIX: Clean the location string for the API
+    # Removes commas and extra spaces so "Londonderry, NH" becomes "Londonderry NH"
+    search_query = location.replace(",", " ").strip()
+
+    geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={search_query}&count=1"
     geo_res = requests.get(geo_url).json()
 
     if not geo_res.get('results'):
-        return await interaction.followup.send(f"❌ Could not find '{location}'. Try being more specific!")
+        # If still not found, try just the first word (the city)
+        simple_city = search_query.split()[0]
+        geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={simple_city}&count=1"
+        geo_res = requests.get(geo_url).json()
+        
+        if not geo_res.get('results'):
+            return await interaction.followup.send(f"❌ Could not find '{location}'. Try just the city name!")
 
     loc = geo_res['results'][0]
 
