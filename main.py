@@ -3,10 +3,22 @@ from discord import app_commands, ui
 import requests
 import datetime
 
-# --- CONFIGURATION (Replace these with your actual keys) ---
-# It is better to use os.getenv('TOKEN') for security, but you can paste them here for testing.
-DISCORD_TOKEN = "YOUR_DISCORD_BOT_TOKEN"
-MAPBOX_TOKEN = "YOUR_MAPBOX_PUBLIC_TOKEN"
+# --- CONFIGURATION ---
+import os
+from dotenv import load_dotenv
+
+# This loads variables from a .env file (for local testing)
+load_dotenv()
+
+# Use os.getenv to pull from Render/System environment variables
+DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+MAPBOX_TOKEN = os.getenv("MAPBOX_TOKEN")
+
+# Add a safety check to make sure the tokens exist
+if not DISCORD_TOKEN or not MAPBOX_TOKEN:
+    print("❌ ERROR: Missing DISCORD_TOKEN or MAPBOX_TOKEN in Environment Variables!")
+    exit()
+
 
 # WMO Weather Codes mapping to Emojis and Text
 WEATHER_MAP = {
